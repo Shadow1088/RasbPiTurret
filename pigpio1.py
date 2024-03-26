@@ -1,8 +1,8 @@
 import pigpio
 
 #define pins for servos
-SERVO_PIN_1 = 17 #replace later!
-SERVO_PIN_2 = 18 #replace later!
+SERVO_PIN_1 = 16 #replace later!
+SERVO_PIN_2 = 17 #replace later!
 
 #pigpio init
 pi = pigpio.pi()

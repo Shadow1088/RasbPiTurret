@@ -50,8 +50,8 @@ while running:
     top_line_end = (center_x, center_y + half_lenght)
     bottom_line_start = (center_x - half_lenght, center_y)
     bottom_line_end = (center_x + half_lenght, center_y)
-    cv.line(frame, top_line_start, top_line_end, (0,0,255), 2)
-    cv.line(frame, bottom_line_start, bottom_line_end, (0,0,255), 2)
+    cv.line(frame, top_line_start, top_line_end, (0,0,255), 1)
+    cv.line(frame, bottom_line_start, bottom_line_end, (0,0,255), 1)
     
     if elapsed_time > 1:
         fps = frames_processed / elapsed_time
@@ -73,4 +73,4 @@ while running:
     
 # release MEE
 cap.release()
-cv.destroyAllWindows()    
+cv.destroyAllWindows()
