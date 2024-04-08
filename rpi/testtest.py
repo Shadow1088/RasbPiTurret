@@ -16,25 +16,34 @@ cap = cv2.VideoCapture(0)
 #####################x
 #ZMQ
 port = "5555"
-context = zmq.Context()
-socket = context.socket(zmq.REP)
-socket.bind(f"tcp://*:{port}")
 
+def getMessage():
+    print("Getting message")
+    context = zmq.Context()
+    socket = context.socket(zmq.REP)
+    socket.bind(f"tcp://*:{port}")
+    message = socket.recv()
+    print(f"Message: {message}")
+    
+    socket.close()
+    context.term()
+    return message
 
 
 def sendData(frame, port):
+    print("Sending data")
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.connect(f"tcp://*:{port}")
  
     socket.send(frame.tobytes())
-    
-    print(f"sent img")
+    print(f"Sent data")
 
     socket.close()
     context.term()
 
 def receiveData():
+    print("Receiving data")
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.bind(f"tcp://*:5555")
@@ -58,10 +67,10 @@ while running:
     current_time = time.time()
     elapsed_time = current_time - start_time
     
-    message = socket.recv()
-    if message == "getData":
+    message = getMessage()
+    if message == "b'getData'":
         sendData(frame, "5555")
-    elif message == "SendData":
+    elif message == "b'sendData'":
         people = receiveData()
 
     if ret:
