@@ -16,43 +16,29 @@ cap = cv2.VideoCapture(0)
 #####################x
 #ZMQ
 port = "5555"
+context = zmq.Context()
+socket = context.socket(zmq.REP)
+socket.bind(f"tcp://*:{port}")
 
 def getMessage():
+    global socket
     print("Getting message")
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.bind(f"tcp://*:{port}")
     message = socket.recv()
     print(f"Message: {message}")
-    
-    socket.close()
-    context.term()
     return message
 
 
 def sendData(frame, port):
+    global socket
     print("Sending data")
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.connect(f"tcp://*:{port}")
- 
     socket.send(frame.tobytes())
     print(f"Sent data")
 
-    socket.close()
-    context.term()
-
 def receiveData():
+    global socket
     print("Receiving data")
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.bind(f"tcp://*:5555")
     data = socket.recv_pyobj()
-    
     print(f"Received data: {data}")
-    
-    socket.close()
-    context.term()
 
 running = True
 while running:
@@ -84,5 +70,7 @@ while running:
         break
 
 # release MEE
+socket.close()
+context.term()
 cap.release()
 cv2.destroyAllWindows()
