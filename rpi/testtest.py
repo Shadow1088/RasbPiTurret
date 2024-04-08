@@ -31,14 +31,17 @@ def getMessage():
 def sendData(frame, port):
     global socket
     print("Sending data")
-    socket.send(frame.tobytes())
+
+    socket.send_pyobj(frame)
     print(f"Sent data")
 
 def receiveData():
     global socket
+    response = socket.send(b"receiving")
     print("Receiving data")
     data = socket.recv_pyobj()
     print(f"Received data: {data}")
+    response2 = socket.send(b"SUCCESS")
 
 running = True
 while running:
@@ -54,9 +57,9 @@ while running:
     elapsed_time = current_time - start_time
     
     message = getMessage()
-    if message == "b'getData'":
+    if message == b'getData':
         sendData(frame, "5555")
-    elif message == "b'sendData'":
+    elif message == b'sendData':
         people = receiveData()
 
     if ret:
