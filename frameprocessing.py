@@ -1,8 +1,8 @@
-#scp replaces png, you take the png, process it and send back rectangle coords, by that you replace txt file on rpi
 import json
 import torch
 import math
 import zmq
+from PIL import Image
 
 #get settings
 with open("settings.json", "r") as file:
@@ -17,29 +17,34 @@ PORT = settings['PORT']
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
 
+context = zmq.Context()
+socket = context.socket(zmq.REQ)
+socket.connect(f"tcp://{rpiIP}:{PORT}")
 
 def getData():
-    context = zmq.Context()
-    socket = context.socket(zmq.REQ)  # Assuming PUSH-PULL communication
-    socket.connect(f"tcp://{rpiIP}:{PORT}")
-    socket.send(b"GetData")  # Send a message
+    global socket
+    print("Getting data")
+    socket.send(b"getData")  # Send a message
     
     try:
-        data = socket.recv()  # Wait for a message (will block)
-        
-        with open("output.png", "wb") as output:
-            output.write(data)
+        print("Sent message and waiting for data")
+        data = socket.recv_pyobj() 
+        print("Data received")
+        print("Transforming data to image")
+        frame = Image.fromarray(data)
+        with open("frame.png", "wb") as file:
+            frame.save(file)
+        print("Data transformed")
+        frame = "frame.png"
+
 
     except zmq.error as e:
         print(f"ZMQ communication error: {e}")
-        return None  # Or handle the error differently
-
-    finally:
-        socket.close()
-        context.term()
-    return data
+        return None  
+    return frame
 
 def processFrame(frame):
+    print("Processing frame")
     # Image
     im = frame
 
@@ -64,27 +69,29 @@ def processFrame(frame):
     return person_boxes
 
 def sendData(data):   
-    #zmq init
-    context = zmq.Context()
-    socket = context.socket(zmq.REQ)
-    socket.connect(f"tcp://{rpiIP}:{PORT}")
-    socket.send(b"SendData")
-
+    print("Sending data")
+    socket.send(b"sendData")
+    if socket.recv() == 'b"receiving"':
+        print("Ready to send")
     #get int coords (x-top,y-top,x-bottom,y-bottom)
+    print(data)
     for lists in data:
         lists = list(lists)
         index = 0
+        
         for item in lists:        
             if not (isinstance(item, int)):
                 lists.remove(item)
                 item = math.floor(item)
                 lists.insert(index,item)
             index+=1
-        socket.send_pyobj(lists)
+    socket.send_pyobj(data)
 
     print("Sent data")
-    #close socket
-    socket.close()
+    if socket.recv() == 'b"SUCCESS"':
+        print("Data received")
+    
+    
 
 #print settings
 for i in settings:
@@ -99,5 +106,6 @@ while running:
     data = processFrame(frame)
     sendData(data)
     
-
+socket.close()
+context.term()
     
