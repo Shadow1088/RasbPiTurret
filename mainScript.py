@@ -138,28 +138,26 @@ try:
                 person.append(math.floor(j))
         print(person)
 
-        bounding_xtop = math.floor(person[0]*0.4)
-        bounding_ytop = math.floor(person[1]*0.4)
-        bounding_xbottom = math.floor(person[2]*0.6)
-        bounding_ybottom = math.floor(person[3]*0.6)
-        
         x_lsr = 160
         y_lsr = 120
-
-        face_width = bounding_xbottom - bounding_xtop
-        face_height = bounding_ybottom - bounding_ytop
-
-        is_center = (bounding_xtop < x_lsr < bounding_xbottom) and (bounding_ytop < y_lsr < bounding_ybottom)
         
-        if ret:
-                cv2.imshow("camera-output+detection", frame)
-                if cv2.waitKey(1) == ord("q"):
-                    break  
         
-        while is_center != True: 
+        if cv2.waitKey(1) == ord("q"):
+            break
+        if person != []:
+            bounding_xtop = math.floor(person[0]*0.4)
+            bounding_ytop = math.floor(person[1]*0.4)
+            bounding_xbottom = math.floor(person[2]*0.6)
+            bounding_ybottom = math.floor(person[3]*0.6)
+            
+            face_width = bounding_xbottom - bounding_xtop
+            face_height = bounding_ybottom - bounding_ytop
 
+            is_center = (bounding_xtop < x_lsr < bounding_xbottom) and (bounding_ytop < y_lsr < bounding_ybottom)
+            
+        
             if ((face_width // 2)+bounding_xbottom) < x_lsr and is_center != True: 
-                currentx-=2
+                currentx+=2
                 setAngle(servox, currentx,0.25)
                 
             if ((face_height // 2)+bounding_ybottom) < y_lsr and is_center != True: 
@@ -167,7 +165,7 @@ try:
                 setAngle(servoy, currenty,0.25)
 
             if ((face_width // 2)+bounding_xbottom) > x_lsr and is_center != True: 
-                currentx+=2
+                currentx-=2
                 setAngle(servox, currentx,0.25)
                 
             if ((face_height // 2)+bounding_ybottom) > y_lsr and is_center != True: 
@@ -182,7 +180,13 @@ try:
                 print("[!] --> X is at 0 degrees, cant rotate no more!")
             if currenty <= 100:
                 print("[!] --> Y is at 100 degrees, cant rotate no more!")
+            print(person)
+            print(f"X: {currentx}")
+            print(f"Y: {currenty}")
+                
+            cv2.rectangle(frame, (person[0], person[1]), (face_width, face_height), (4,247,13), 2)
 
+        cv2.imshow("camera-output+detection", frame)
 
         if elapsed_time > 1:
             fps = frames_processed / elapsed_time
