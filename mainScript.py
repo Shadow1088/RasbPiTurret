@@ -112,6 +112,11 @@ try:
         # capture a frame (ret is return value, its a boolean that says if its all good or nah)
         ret, frame = cap.read()
         
+        if not ret:
+            print("Error: Unable to capture the frame!")
+            break
+
+
         #resize
         if ret:
             frame = cv2.resize(frame, (width, height))
@@ -138,14 +143,20 @@ try:
         bounding_xbottom = math.floor(person[2]*0.6)
         bounding_ybottom = math.floor(person[3]*0.6)
         
-        x_lsr = 270
-        y_lsr = 130
+        x_lsr = 160
+        y_lsr = 120
 
         face_width = bounding_xbottom - bounding_xtop
         face_height = bounding_ybottom - bounding_ytop
 
         is_center = (bounding_xtop < x_lsr < bounding_xbottom) and (bounding_ytop < y_lsr < bounding_ybottom)
-        while is_center != True:
+        
+        if ret:
+                cv2.imshow("camera-output+detection", frame)
+                if cv2.waitKey(1) == ord("q"):
+                    break  
+        
+        while is_center != True: 
 
             if ((face_width // 2)+bounding_xbottom) < x_lsr and is_center != True: 
                 currentx-=2
@@ -181,16 +192,11 @@ try:
             frames_processed = 0
         
         # check it out (later put the logic for processing the frames here)
-        if ret:
-            cv2.imshow("camera-output+detection", frame)
-            if cv2.waitKey(1) == ord("q"):
-                break        
-        else:
-            print("Error: Unable to capture the frame!")
-            break
+             
+        
 
-except:
-    pass
+except cv2.error:
+    print(cv2.error)
 finally:
     # release MEE
     socket.close()
